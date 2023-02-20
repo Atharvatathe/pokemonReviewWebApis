@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using pokemonReviewApp.Dto;
 using pokemonReviewApp.Interfaces;
 using pokemonReviewApp.Models;
+using pokemonReviewApp.Repositories;
 using System.Diagnostics.Metrics;
 
 namespace pokemonReviewApp.Controllers
@@ -103,6 +104,57 @@ namespace pokemonReviewApp.Controllers
 
          }
 
-  
+        [HttpPut("{countryId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCountry([FromBody] CountryDto countryUpdate, int countryId)
+        {
+            if (countryUpdate == null)
+                return BadRequest(ModelState);
+
+            if (countryId != countryUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_countryRepository.CountryExists(countryId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var countryMap = _mapper.Map<Country>(countryUpdate);
+
+            if (!_countryRepository.UpdateCountry(countryMap))
+            {
+                ModelState.AddModelError("", "Something went worng while updating country");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully Updated");
+
+        }
+
+        [HttpDelete("{countryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int countryId)
+        {
+            if (!_countryRepository.CountryExists(countryId))
+                return NotFound();
+
+            var countryToDelete = _countryRepository.GetCountry(countryId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_countryRepository.DeleteCountry(countryToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleteing country ");
+            }
+
+            return Ok("successfully Deleted");
+        }
+
     }
 }

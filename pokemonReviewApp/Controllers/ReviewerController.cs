@@ -95,5 +95,59 @@ namespace pokemonReviewApp.Controllers
 
             return Ok(reviewerMap);
         }
+
+        [HttpPut("{reviewerId}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateReviewer([FromBody] ReviewerDto reviewerUpdate, int reviewerId)
+        {
+            if (reviewerUpdate == null)
+                return BadRequest(ModelState);
+
+            if (reviewerId != reviewerUpdate.Id)
+                return BadRequest(ModelState);
+
+            if (!_reviewerRepository.ReviewerExist(reviewerId))
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var reviewerMap = _mapper.Map<Reviewer>(reviewerUpdate);
+
+            if (!_reviewerRepository.UpdateReviewer(reviewerMap))
+            {
+                ModelState.AddModelError("", "Something went worng while updating Reviewer");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully Updated");
+
+        }
+
+        [HttpDelete("{reviewerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteReviewer(int reviewerId)
+        {
+            if (!_reviewerRepository.ReviewerExist(reviewerId))
+                return NotFound();
+
+            var reviewerToDelete = _reviewerRepository.GetReviewer(reviewerId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_reviewerRepository.DeleteReviewer(reviewerToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleteing pokemon ");
+            }
+
+            return Ok("successfully Deleted");
+        }
+
+
     }
 }

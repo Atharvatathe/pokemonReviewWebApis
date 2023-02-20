@@ -23,6 +23,12 @@ namespace pokemonReviewApp.Repositories
             return Save();
         }
 
+        public bool DeleteCountry(Country country)
+        {
+            _context?.Remove(country);
+            return Save();
+        }
+
         public Country GetCountry(int id)
         {
             return _context.Countries.Where(c => c.Id == id).FirstOrDefault();
@@ -47,6 +53,12 @@ namespace pokemonReviewApp.Repositories
         {
             var saved = _context.SaveChanges();
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdateCountry(Country country)
+        {
+            _context.Update(country);
+            return Save();
         }
     }
 }
