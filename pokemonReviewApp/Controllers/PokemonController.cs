@@ -14,15 +14,13 @@ namespace pokemonReviewApp.Controllers
     public class PokemonController : Controller
     {
         private readonly IPokemonRepository _pokemonRepository;
-        private readonly IOwnerRepository _ownerRepository;
-        private readonly ICategoryRepository _categoryRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepository pokemonRepository,IOwnerRepository ownerRepository, ICategoryRepository categoryRepository, IMapper mapper)
+        public PokemonController(IPokemonRepository pokemonRepository,IReviewRepository reviewRepository, IMapper mapper)
         {
             _pokemonRepository = pokemonRepository;
-            _ownerRepository = ownerRepository;
-            _categoryRepository = categoryRepository;
+            _reviewRepository = reviewRepository;
             _mapper = mapper;
         }
 
@@ -138,10 +136,16 @@ namespace pokemonReviewApp.Controllers
             if (!_pokemonRepository.PokemonExists(pokeId))
                 return NotFound();
 
+            var reviewsToDelete = _reviewRepository.GetReviewOfAPokemon(pokeId);
             var pokemonToDelete = _pokemonRepository.GetPokemon(pokeId);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            if (!_reviewRepository.DeleteReviews(reviewsToDelete.ToList()))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleteing reviews ");
+            }
 
             if (!_pokemonRepository.DeletePokemon(pokemonToDelete))
             {
